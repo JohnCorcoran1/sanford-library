@@ -14,6 +14,29 @@ python server.py
 
 Then open [http://localhost:8000](http://localhost:8000) in a browser.
 
+## Run as a Windows app
+
+The desktop entry point opens the same interface in a native PyWebView window. Install the desktop dependencies, then run it:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-build.txt
+.\.venv\Scripts\python.exe desktop.py
+```
+
+The Windows app uses the Microsoft Edge WebView2 runtime included with current Windows 10 and Windows 11 installations.
+
+### Build the executable
+
+From PowerShell in the repository directory, run:
+
+```powershell
+.\build.ps1
+```
+
+The one-file, windowed executable is written to `dist\Sanford Library.exe`. The build intentionally does not include `.env` or your TMDB token.
+
+On its first launch, the executable copies the bundled catalog, skins, and posters to `%LOCALAPPDATA%\Sanford Library`. All later edits are saved there, so they survive app upgrades and PyInstaller's temporary extraction directory. If no TMDB token is configured, the app prompts for an API Read Access Token, validates it with TMDB, and saves it to `%LOCALAPPDATA%\Sanford Library\.env`. Users can skip the prompt and continue with manual title entry; the prompt returns on the next launch.
+
 ## Project structure
 
 ```text
@@ -99,7 +122,7 @@ After editing the catalog, refresh the browser. If the JSON is malformed, the pa
 
 ## Customize the interface
 
-Use the skin picker beside **Add title** to switch between the built-in Midnight, Matinee, and Deep Blue skins. The selected skin is remembered in that browser.
+Use the skin picker beside **Add title** to switch between the built-in Shrek's Swamp, Midnight, Matinee, and Deep Blue skins. Shrek's Swamp is the first-open default, and the selected skin is remembered in that browser afterward.
 
 When the included server is running, select **Skins** to create a custom appearance. Custom skins are saved in `skins.json`, so they are available to every browser using this library. The editor controls colors, typography, spacing, content width, control and poster sizing, grid gaps, corner radii, shadows, header and family-badge images, the page background image, dialog backdrop, and scrollbars. Image fields accept a web URL or a path relative to the application, such as `assets/background.jpg`. Select a custom skin before opening the editor if you want to use it as a starting point or delete it. Arbitrary CSS is not accepted.
 
@@ -111,7 +134,7 @@ When the included server is running, select **Skins** to create a custom appeara
 - Adjustable poster size
 - Lazy-loaded, independently cached poster images
 - Responsive desktop and mobile layout
-- Three built-in interface skins and server-persisted custom visual skins
+- Four built-in interface skins, including the default Shrek's Swamp theme, and server-persisted custom visual skins
 - TMDB movie and series search with metadata and poster import
 - Local form for manual entry and poster optimization
 

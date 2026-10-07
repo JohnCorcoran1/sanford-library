@@ -1,14 +1,1 @@
-[
-  {
-    "id": "midnight-custom",
-    "name": "Midnight Custom",
-    "background": "#df1111",
-    "surface": "#702323",
-    "surfaceAlt": "#222154",
-    "text": "#c9bbbb",
-    "muted": "#492727",
-    "border": "#fefbfb",
-    "accent": "#e8e8e8",
-    "accentText": "#af9d9d"
-  }
-]
+[]

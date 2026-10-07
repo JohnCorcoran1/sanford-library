@@ -9,6 +9,8 @@ import binascii
 import json
 import os
 import re
+import shutil
+import sys
 import threading
 import unicodedata
 from http import HTTPStatus
@@ -16,18 +18,33 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import parse_qs, quote, urlencode, urlparse
+from urllib.parse import parse_qs, quote, unquote, urlencode, urlparse
 from urllib.request import Request, urlopen
 
 
-ROOT = Path(__file__).resolve().parent
-CATALOG_PATH = ROOT / "movies.json"
-SKINS_PATH = ROOT / "skins.json"
-POSTER_DIR = ROOT / "posters"
-MAX_REQUEST_BYTES = 3 * 1024 * 1024
+ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)).resolve()
+if getattr(sys, "frozen", False):
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    default_data_root = (
+        Path(local_app_data) / "Sanford Library"
+        if local_app_data
+        else Path.home() / "AppData" / "Local" / "Sanford Library"
+    )
+else:
+    default_data_root = ROOT
+DATA_ROOT = Path(os.environ.get("SANFORD_LIBRARY_DATA_DIR", default_data_root)).resolve()
+CATALOG_PATH = DATA_ROOT / "movies.json"
+SKINS_PATH = DATA_ROOT / "skins.json"
+POSTER_DIR = DATA_ROOT / "posters"
+SKIN_IMAGE_DIR = DATA_ROOT / "skin-images"
+ENV_PATH = DATA_ROOT / ".env"
+DESKTOP_MODE = os.environ.get("SANFORD_LIBRARY_DESKTOP") == "1"
+MAX_REQUEST_BYTES = 18 * 1024 * 1024
 MAX_POSTER_BYTES = 2 * 1024 * 1024
+MAX_SKIN_IMAGE_BYTES = 4 * 1024 * 1024
 CATALOG_LOCK = threading.Lock()
 SKINS_LOCK = threading.Lock()
+TMDB_TOKEN_LOCK = threading.Lock()
 JPEG_DATA_PREFIX = "data:image/jpeg;base64,"
 SKIN_COLOR_FIELDS = (
     "background",
@@ -62,6 +79,11 @@ SKIN_NUMBER_FIELDS = {
     "scrollbarWidth": (6, 20),
 }
 SKIN_URL_FIELDS = ("headerImage", "familyIcon", "backgroundImage")
+SKIN_IMAGE_MIME_TYPES = {
+    "image/jpeg": ("jpg", b"\xff\xd8\xff"),
+    "image/png": ("png", b"\x89PNG\r\n\x1a\n"),
+    "image/webp": ("webp", b"RIFF"),
+}
 
 
 def load_dotenv(path: Path) -> None:
@@ -85,7 +107,7 @@ def load_dotenv(path: Path) -> None:
         os.environ[key] = value
 
 
-load_dotenv(ROOT / ".env")
+load_dotenv(ENV_PATH)
 TMDB_READ_TOKEN = os.environ.get("TMDB_READ_TOKEN", "").strip()
 TMDB_API_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
@@ -114,6 +136,28 @@ class RequestError(Exception):
         self.status = status
 
 
+def initialize_data_files() -> None:
+    """Create the writable library from the bundled seed data on first launch."""
+    if DATA_ROOT == ROOT:
+        return
+
+    DATA_ROOT.mkdir(parents=True, exist_ok=True)
+    for filename in ("movies.json", "skins.json"):
+        source = ROOT / filename
+        destination = DATA_ROOT / filename
+        if not destination.exists() and source.is_file():
+            shutil.copy2(source, destination)
+
+    POSTER_DIR.mkdir(parents=True, exist_ok=True)
+    SKIN_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    bundled_posters = ROOT / "posters"
+    if bundled_posters.is_dir():
+        for source in bundled_posters.iterdir():
+            destination = POSTER_DIR / source.name
+            if source.is_file() and not destination.exists():
+                shutil.copy2(source, destination)
+
+
 def clean_text(value: Any, field: str, *, required: bool, maximum: int = 200) -> str:
     if not isinstance(value, str):
         raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} must be text.")
@@ -130,8 +174,14 @@ def slugify(title: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", normalized.lower()).strip("-") or "title"
 
 
-def tmdb_request(path: str, parameters: dict[str, Any] | None = None) -> dict[str, Any]:
-    if not TMDB_READ_TOKEN:
+def tmdb_request(
+    path: str,
+    parameters: dict[str, Any] | None = None,
+    *,
+    access_token: str | None = None,
+) -> dict[str, Any]:
+    token = TMDB_READ_TOKEN if access_token is None else access_token
+    if not token:
         raise RequestError(
             HTTPStatus.SERVICE_UNAVAILABLE,
             "TMDB search is not configured. Set TMDB_READ_TOKEN before starting the server.",
@@ -141,7 +191,7 @@ def tmdb_request(path: str, parameters: dict[str, Any] | None = None) -> dict[st
         f"{TMDB_API_BASE}{path}{query}",
         headers={
             "Accept": "application/json",
-            "Authorization": f"Bearer {TMDB_READ_TOKEN}",
+            "Authorization": f"Bearer {token}",
             "User-Agent": "Sanford-Library/1.0",
         },
     )
@@ -168,6 +218,56 @@ def tmdb_request(path: str, parameters: dict[str, Any] | None = None) -> dict[st
     if not isinstance(payload, dict):
         raise RequestError(HTTPStatus.BAD_GATEWAY, "TMDB returned an invalid response.")
     return payload
+
+
+def save_tmdb_token(payload: Any) -> None:
+    """Validate and persist a first-run TMDB read token for the desktop app."""
+    global TMDB_READ_TOKEN
+
+    if not isinstance(payload, dict):
+        raise RequestError(HTTPStatus.BAD_REQUEST, "The request body must be an object.")
+    token = clean_text(payload.get("token"), "TMDB token", required=True, maximum=4096)
+    if "\n" in token or "\r" in token:
+        raise RequestError(HTTPStatus.BAD_REQUEST, "The TMDB token is invalid.")
+
+    with TMDB_TOKEN_LOCK:
+        if TMDB_READ_TOKEN:
+            raise RequestError(HTTPStatus.CONFLICT, "A TMDB token is already configured.")
+
+        tmdb_request("/configuration", access_token=token)
+        DATA_ROOT.mkdir(parents=True, exist_ok=True)
+        try:
+            lines = ENV_PATH.read_text(encoding="utf-8").splitlines() if ENV_PATH.is_file() else []
+        except OSError as error:
+            raise RequestError(HTTPStatus.INTERNAL_SERVER_ERROR, "The settings file could not be read.") from error
+
+        token_line = f"TMDB_READ_TOKEN={token}"
+        updated_lines: list[str] = []
+        replaced = False
+        for line in lines:
+            if re.match(r"^\s*TMDB_READ_TOKEN\s*=", line):
+                if not replaced:
+                    updated_lines.append(token_line)
+                    replaced = True
+            else:
+                updated_lines.append(line)
+        if not replaced:
+            updated_lines.append(token_line)
+
+        temporary_path = ENV_PATH.with_suffix(".env.tmp")
+        try:
+            temporary_path.write_text(
+                "\n".join(updated_lines) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            os.replace(temporary_path, ENV_PATH)
+        except OSError as error:
+            temporary_path.unlink(missing_ok=True)
+            raise RequestError(HTTPStatus.INTERNAL_SERVER_ERROR, "The TMDB token could not be saved.") from error
+
+        os.environ["TMDB_READ_TOKEN"] = token
+        TMDB_READ_TOKEN = token
 
 
 def tmdb_poster_path(value: Any) -> str | None:
@@ -376,6 +476,25 @@ def save_skins(skins: list[dict[str, str]]) -> None:
         raise RequestError(HTTPStatus.INTERNAL_SERVER_ERROR, "The custom skins could not be saved.") from error
 
 
+def decode_skin_image(value: str, field: str) -> tuple[bytes, str]:
+    header, separator, encoded = value.partition(",")
+    match = re.fullmatch(r"data:(image/(?:jpeg|png|webp));base64", header, re.IGNORECASE)
+    if not separator or not match:
+        raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} must be a JPEG, PNG, or WebP image.")
+    mime_type = match.group(1).lower()
+    try:
+        image = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error) as error:
+        raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} contains invalid image data.") from error
+    if not image or len(image) > MAX_SKIN_IMAGE_BYTES:
+        raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} must be no larger than 4 MB.")
+
+    extension, signature = SKIN_IMAGE_MIME_TYPES[mime_type]
+    if not image.startswith(signature) or (mime_type == "image/webp" and image[8:12] != b"WEBP"):
+        raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} contains invalid image data.")
+    return image, extension
+
+
 def add_skin(payload: Any) -> dict[str, str]:
     if not isinstance(payload, dict):
         raise RequestError(HTTPStatus.BAD_REQUEST, "The request body must be an object.")
@@ -399,9 +518,16 @@ def add_skin(payload: Any) -> dict[str, str]:
                 f"{field} must be a whole number from {minimum} to {maximum}.",
             )
         skin[field] = value
+    uploaded_images: dict[str, tuple[bytes, str]] = {}
     for field in SKIN_URL_FIELDS:
         value = payload.get(field, "")
-        if not isinstance(value, str) or len(value) > 500 or any(character in value for character in "\r\n<>"):
+        if not isinstance(value, str):
+            raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} must be a valid image URL or path.")
+        if value.startswith("data:"):
+            uploaded_images[field] = decode_skin_image(value, field)
+            skin[field] = ""
+            continue
+        if len(value) > 500 or any(character in value for character in "\r\n<>"):
             raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} must be a valid image URL or path.")
         if value and not re.fullmatch(r"(?:https?://|/|\.\.?/)?[A-Za-z0-9_%+.,@:/?#=&~-]+", value):
             raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} must be a valid image URL or path.")
@@ -419,18 +545,56 @@ def add_skin(payload: Any) -> dict[str, str]:
             skin_id = f"{base_id}-{suffix}"
             suffix += 1
         skin["id"] = skin_id
-        skins.append(skin)
-        save_skins(skins)
+        written_images: list[Path] = []
+        temporary_images: list[Path] = []
+        try:
+            SKIN_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+            for field, (image, extension) in uploaded_images.items():
+                field_name = re.sub(r"(?<!^)(?=[A-Z])", "-", field).lower()
+                image_path = SKIN_IMAGE_DIR / f"{skin_id}-{field_name}.{extension}"
+                temporary_path = image_path.with_name(image_path.name + ".tmp")
+                temporary_images.append(temporary_path)
+                temporary_path.write_bytes(image)
+                os.replace(temporary_path, image_path)
+                written_images.append(image_path)
+                skin[field] = f"skin-images/{image_path.name}"
+            skins.append(skin)
+            save_skins(skins)
+        except RequestError:
+            for path in (*temporary_images, *written_images):
+                path.unlink(missing_ok=True)
+            raise
+        except OSError as error:
+            for path in (*temporary_images, *written_images):
+                path.unlink(missing_ok=True)
+            raise RequestError(HTTPStatus.INTERNAL_SERVER_ERROR, "The skin images could not be saved.") from error
     return skin
 
 
 def delete_skin(skin_id: str) -> None:
     with SKINS_LOCK:
         skins = load_skins()
+        deleted_skin = next((skin for skin in skins if skin.get("id") == skin_id), None)
         remaining = [skin for skin in skins if skin.get("id") != skin_id]
         if len(remaining) == len(skins):
             raise RequestError(HTTPStatus.NOT_FOUND, "The custom skin was not found.")
         save_skins(remaining)
+        if deleted_skin:
+            remaining_images = {
+                skin.get(field, "")
+                for skin in remaining
+                for field in SKIN_URL_FIELDS
+            }
+            for field in SKIN_URL_FIELDS:
+                image_path = deleted_skin.get(field, "")
+                if not image_path.startswith("skin-images/") or image_path in remaining_images:
+                    continue
+                candidate = (DATA_ROOT / image_path).resolve()
+                try:
+                    candidate.relative_to(SKIN_IMAGE_DIR.resolve())
+                    candidate.unlink(missing_ok=True)
+                except (OSError, ValueError):
+                    pass
 
 
 def unique_poster_path(title: str, order: int) -> Path:
@@ -529,9 +693,38 @@ class SanfordLibraryHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
+    def translate_path(self, path: str) -> str:
+        """Serve the mutable catalog and posters from the per-user data folder."""
+        request_path = unquote(urlparse(path).path)
+        if request_path == "/movies.json":
+            return str(CATALOG_PATH)
+        media_directories = {"/posters": POSTER_DIR, "/skin-images": SKIN_IMAGE_DIR}
+        media_prefix = next(
+            (
+                prefix
+                for prefix in media_directories
+                if request_path == prefix or request_path.startswith(prefix + "/")
+            ),
+            None,
+        )
+        if media_prefix:
+            media_directory = media_directories[media_prefix]
+            relative_path = request_path.removeprefix(media_prefix).lstrip("/")
+            candidate = (media_directory / relative_path).resolve()
+            try:
+                candidate.relative_to(media_directory.resolve())
+            except ValueError:
+                return str(media_directory / "__invalid_path__")
+            return str(candidate)
+        return super().translate_path(path)
+
     def end_headers(self) -> None:
         request_path = urlparse(self.path).path
-        if request_path in {"/", "/index.html", "/movies.json"} or request_path.startswith("/api/"):
+        if (
+            request_path in {"/", "/index.html", "/movies.json"}
+            or request_path.startswith("/api/")
+            or request_path.startswith("/skin-images/")
+        ):
             self.send_header("Cache-Control", "no-cache")
         super().end_headers()
 
@@ -585,7 +778,10 @@ class SanfordLibraryHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         request_path = urlparse(self.path).path
-        if request_path not in {"/api/movies", "/api/skins"}:
+        allowed_paths = {"/api/movies", "/api/skins"}
+        if DESKTOP_MODE:
+            allowed_paths.add("/api/tmdb/token")
+        if request_path not in allowed_paths:
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Not found."})
             return
         try:
@@ -602,7 +798,10 @@ class SanfordLibraryHandler(SimpleHTTPRequestHandler):
                 payload = json.loads(self.rfile.read(content_length))
             except (UnicodeDecodeError, json.JSONDecodeError) as error:
                 raise RequestError(HTTPStatus.BAD_REQUEST, "The request contains invalid JSON.") from error
-            if request_path == "/api/skins":
+            if request_path == "/api/tmdb/token":
+                save_tmdb_token(payload)
+                self.send_json(HTTPStatus.CREATED, {"configured": True})
+            elif request_path == "/api/skins":
                 skin = add_skin(payload)
                 self.send_json(HTTPStatus.CREATED, {"skin": skin})
             else:
@@ -628,6 +827,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run Sanford Library locally with catalog editing enabled.")
     parser.add_argument("--port", type=int, default=8000, help="Local port (default: 8000)")
     args = parser.parse_args()
+    initialize_data_files()
     server = ThreadingHTTPServer(("127.0.0.1", args.port), SanfordLibraryHandler)
     print(f"Sanford Library is running at http://127.0.0.1:{args.port}")
     print(f"TMDB search is {'enabled' if TMDB_READ_TOKEN else 'disabled (set TMDB_READ_TOKEN to enable)'}.")

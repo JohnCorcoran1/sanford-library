@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Set up TMDB — Sanford Library</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #080c12;
+            color: #f5f7fb;
+        }
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            padding: 32px;
+            background:
+                radial-gradient(circle at top, rgba(66, 120, 180, .22), transparent 42%),
+                #080c12;
+        }
+        main {
+            width: min(560px, 100%);
+            padding: 40px;
+            border: 1px solid #26364a;
+            border-radius: 18px;
+            background: rgba(16, 24, 35, .96);
+            box-shadow: 0 28px 70px rgba(0, 0, 0, .45);
+        }
+        h1 { margin: 0 0 12px; font-size: clamp(28px, 5vw, 38px); }
+        p { color: #afbed1; line-height: 1.6; }
+        label { display: block; margin: 28px 0 9px; font-weight: 700; }
+        input {
+            width: 100%;
+            min-height: 48px;
+            padding: 10px 13px;
+            border: 1px solid #38506d;
+            border-radius: 10px;
+            outline: none;
+            background: #0b111a;
+            color: #f5f7fb;
+            font: inherit;
+        }
+        input:focus { border-color: #74b7ff; box-shadow: 0 0 0 3px rgba(116, 183, 255, .16); }
+        .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+        button, .secondary {
+            min-height: 44px;
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 10px;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        button { background: #74b7ff; color: #07111d; }
+        button:disabled { cursor: wait; opacity: .65; }
+        .secondary { background: #202d3d; color: #dce8f6; }
+        a { color: #8cc4ff; }
+        #status { min-height: 24px; margin: 14px 0 0; color: #ffadad; }
+        .fine-print { margin-bottom: 0; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Connect to TMDB</h1>
+        <p>Enter your TMDB <strong>API Read Access Token</strong> to enable title search, metadata, and poster imports. Sanford Library validates it with TMDB and stores it only on this computer.</p>
+        <p><a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noreferrer">Open TMDB API settings</a></p>
+
+        <form id="token-form">
+            <label for="token">API Read Access Token</label>
+            <input id="token" name="token" type="password" autocomplete="off" spellcheck="false" required autofocus>
+            <div class="actions">
+                <button id="save" type="submit">Validate and save</button>
+                <button class="secondary" id="skip" type="button">Continue without TMDB</button>
+            </div>
+            <p id="status" role="status" aria-live="polite"></p>
+        </form>
+
+        <p class="fine-print">If you skip this step, manual title entry still works and you will be prompted again the next time the app starts.</p>
+    </main>
+
+    <script>
+        const form = document.querySelector('#token-form');
+        const tokenInput = document.querySelector('#token');
+        const saveButton = document.querySelector('#save');
+        const status = document.querySelector('#status');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const token = tokenInput.value.trim();
+            if (!token) return;
+
+            saveButton.disabled = true;
+            status.textContent = 'Validating with TMDB…';
+            try {
+                const response = await fetch('/api/tmdb/token', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({token})
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(payload.error || 'The token could not be saved.');
+                location.replace('/');
+            } catch (error) {
+                status.textContent = error.message;
+                saveButton.disabled = false;
+                tokenInput.focus();
+            }
+        });
+
+        document.querySelector('#skip').addEventListener('click', () => location.replace('/'));
+    </script>
+</body>
+</html>

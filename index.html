@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-skin="shrek">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,33 +7,33 @@
     <style>
         * { box-sizing: border-box; }
         :root {
-            --skin-background: #111111;
-            --skin-surface: #181818;
-            --skin-surface-alt: #222222;
-            --skin-text: #eeeeee;
-            --skin-muted: #aaaaaa;
-            --skin-border: #444444;
-            --skin-accent: #d6a84f;
-            --skin-accent-text: #111111;
-            --skin-font-family: Arial, Helvetica, sans-serif;
-            --skin-font-size: 14px;
-            --skin-font-weight: 400;
+            --skin-background: #10180d;
+            --skin-surface: #20301d;
+            --skin-surface-alt: #39482a;
+            --skin-text: #f5efcb;
+            --skin-muted: #c4c79c;
+            --skin-border: #748c40;
+            --skin-accent: #b7ce63;
+            --skin-accent-text: #18210f;
+            --skin-font-family: "Trebuchet MS", "Arial Rounded MT Bold", sans-serif;
+            --skin-font-size: 15px;
+            --skin-font-weight: 500;
             --skin-spacing: 16px;
             --skin-content-width: 1800px;
-            --skin-control-height: 38px;
-            --skin-grid-gap: 16px;
-            --skin-radius: 6px;
-            --skin-shadow: 0 1px 5px rgba(0,0,0,.65);
-            --skin-backdrop: rgba(0,0,0,.75);
-            --skin-scrollbar-width: 10px;
-            --skin-scrollbar-track: #181818;
-            --skin-scrollbar-thumb: #444444;
+            --skin-control-height: 40px;
+            --skin-grid-gap: 18px;
+            --skin-radius: 14px;
+            --skin-shadow: 0 18px 60px rgba(0,0,0,.75);
+            --skin-backdrop: rgba(8,12,6,.82);
+            --skin-scrollbar-width: 12px;
+            --skin-scrollbar-track: #20301d;
+            --skin-scrollbar-thumb: #748c40;
         }
         html, body {
             margin: 0;
             padding: 0;
-            background: #111;
-            color: #eee;
+            background: #10180d;
+            color: #f5efcb;
             font-family: var(--skin-font-family);
             font-size: var(--skin-font-size);
             font-weight: var(--skin-font-weight);
@@ -43,8 +43,8 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(17,17,17,.96);
-            border-bottom: 1px solid #333;
+            background: rgba(16,24,13,.96);
+            border-bottom: 1px solid #748c40;
             padding: var(--skin-spacing);
             backdrop-filter: blur(8px);
         }
@@ -239,6 +239,50 @@
             margin: 0;
             font-size: 22px;
         }
+        #skinDialog {
+            position: fixed;
+            box-sizing: border-box;
+            width: min(860px, calc(100vw - 24px));
+            min-width: min(360px, calc(100vw - 24px));
+            min-height: min(320px, calc(100vh - 24px));
+            resize: both;
+        }
+        #skinDialog .dialog-header {
+            cursor: move;
+            touch-action: none;
+            user-select: none;
+        }
+        #skinDialog .dialog-header:active { cursor: grabbing; }
+        #skinDialog .dialog-close { cursor: pointer; }
+        .skin-resize-handle {
+            position: fixed;
+            z-index: 2;
+            width: 24px;
+            min-height: 24px;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            cursor: nwse-resize;
+            touch-action: none;
+        }
+        .skin-resize-handle::after {
+            position: absolute;
+            right: 4px;
+            bottom: 4px;
+            width: 10px;
+            height: 10px;
+            border-right: 2px solid var(--skin-muted);
+            border-bottom: 2px solid var(--skin-muted);
+            content: '';
+        }
+        .skin-resize-handle:hover:not(:disabled) { background: transparent; }
+        .dialog-drag-hint {
+            margin: 2px 0 0;
+            color: var(--skin-muted);
+            font-size: 11px;
+            font-weight: 400;
+        }
         .dialog-close {
             width: 38px;
             padding: 0;
@@ -408,7 +452,14 @@
         }
         .title-actions { display: flex; align-items: center; gap: 8px; }
         .skin-picker { width: auto; min-width: 130px; }
-        .skin-button { white-space: nowrap; }
+        .skin-button {
+            display: inline-grid;
+            width: var(--skin-control-height);
+            min-width: var(--skin-control-height);
+            padding: 0;
+            place-items: center;
+        }
+        .skin-button span { font-size: 20px; line-height: 1; }
         .skin-colors {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -424,6 +475,12 @@
         .skin-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
         .range-field { display: grid; grid-template-columns: minmax(0, 1fr) 54px; align-items: center; gap: 8px; }
         .range-field output { color: var(--skin-muted); text-align: right; }
+        .skin-image-control { display: grid; gap: 6px; }
+        .skin-image-control input[type="file"] { height: auto; padding: 6px; }
+        .skin-image-path-row { display: flex; align-items: center; gap: 6px; }
+        .skin-image-path-row input { min-width: 0; }
+        .skin-image-clear { flex: 0 0 auto; min-height: var(--skin-control-height); }
+        .skin-image-status { color: var(--skin-muted); font-size: 11px; overflow-wrap: anywhere; }
         .brand-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
         .header-image { display: none; max-width: 160px; height: 40px; object-fit: contain; }
         * { scrollbar-color: var(--skin-scrollbar-thumb) var(--skin-scrollbar-track); scrollbar-width: auto; }
@@ -437,22 +494,6 @@
             gap: 9px;
         }
         .color-field input[type="color"] { width: 42px; height: 38px; padding: 3px; }
-        .skin-preview {
-            margin: 14px 0;
-            padding: 16px;
-            border: 1px solid var(--skin-border);
-            border-radius: 8px;
-            background: var(--skin-background);
-            color: var(--skin-text);
-        }
-        .skin-preview-card {
-            padding: 12px;
-            border: 1px solid var(--skin-border);
-            border-radius: 6px;
-            background: var(--skin-surface);
-        }
-        .skin-preview-card span { color: var(--skin-muted); }
-        .skin-preview-card b { color: var(--skin-accent); }
         .danger-button { border-color: #a84b4b; color: #ffb0b0; }
 
         html, body { background: var(--skin-background); color: var(--skin-text); }
@@ -467,6 +508,83 @@
         dialog { background: var(--skin-surface); color: var(--skin-text); border-color: var(--skin-border); }
         .form-field { color: var(--skin-text); }
         .family-filter.active, .family-toggle[aria-pressed="true"] { border-color: var(--skin-accent); box-shadow: 0 0 0 1px var(--skin-accent); }
+        html[data-skin="shrek"] body {
+            background-color: var(--skin-background);
+            background-image: url("assets/shrek-swamp.png");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        html[data-skin="shrek"] .header {
+            background:
+                linear-gradient(90deg, rgba(16,24,13,.98), rgba(32,48,29,.92)),
+                repeating-linear-gradient(105deg, transparent 0 22px, rgba(183,206,99,.04) 23px 24px);
+            border-bottom-width: 2px;
+            box-shadow: 0 8px 28px rgba(0,0,0,.45);
+        }
+        html[data-skin="shrek"] .brand-title::before {
+            content: '\1F9C5';
+            display: grid;
+            width: 42px;
+            height: 42px;
+            border: 2px solid var(--skin-accent);
+            border-radius: 50% 44% 50% 42%;
+            background: #ece2a6;
+            color: #67572c;
+            font-size: 25px;
+            line-height: 1;
+            place-items: center;
+            box-shadow: inset 0 -5px 8px rgba(80,65,20,.25), 0 4px 12px rgba(0,0,0,.35);
+            transform: rotate(-6deg);
+        }
+        html[data-skin="shrek"] h1 {
+            color: #d9e98d;
+            font-family: Georgia, "Times New Roman", serif;
+            letter-spacing: .02em;
+            text-shadow: 0 2px 0 #29351a, 0 4px 14px rgba(0,0,0,.75);
+        }
+        html[data-skin="shrek"] .brand-title::after {
+            align-self: flex-end;
+            margin: 0 0 3px -3px;
+            color: var(--skin-muted);
+            content: "Welcome to the swamp";
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 12px;
+            font-style: italic;
+            white-space: nowrap;
+        }
+        html[data-skin="shrek"] input,
+        html[data-skin="shrek"] select,
+        html[data-skin="shrek"] button,
+        html[data-skin="shrek"] .family-filter,
+        html[data-skin="shrek"] .family-toggle {
+            border-width: 2px;
+            box-shadow: inset 0 1px rgba(255,255,255,.08), 0 3px 9px rgba(0,0,0,.2);
+        }
+        html[data-skin="shrek"] input[type="range"] { accent-color: var(--skin-accent); }
+        html[data-skin="shrek"] .movie-card {
+            padding: 8px;
+            border: 1px solid color-mix(in srgb, var(--skin-border) 72%, transparent);
+            border-radius: calc(var(--skin-radius) + 3px);
+            background: color-mix(in srgb, var(--skin-surface) 86%, transparent);
+            box-shadow: 0 12px 34px rgba(0,0,0,.48);
+            backdrop-filter: blur(7px);
+            transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+        }
+        html[data-skin="shrek"] .movie-card:hover {
+            border-color: var(--skin-accent);
+            box-shadow: 0 18px 42px rgba(0,0,0,.58), 0 0 0 1px rgba(183,206,99,.2);
+            transform: translateY(-3px);
+        }
+        html[data-skin="shrek"] .poster { border-color: rgba(217,233,141,.28); }
+        html[data-skin="shrek"] .detail { border: 1px solid rgba(183,206,99,.18); }
+        html[data-skin="shrek"] dialog { box-shadow: 0 28px 90px rgba(0,0,0,.78); }
+        html[data-skin="shrek"] .tmdb-attribution {
+            margin-top: 8px;
+            padding-top: 14px;
+            background: linear-gradient(transparent, rgba(16,24,13,.88));
+        }
         .hidden { display: none !important; }
         @media (max-width: 900px) {
             .controls {
@@ -489,9 +607,11 @@
             }
             .title-row { margin-bottom: 8px; }
             .title-row { align-items: flex-start; }
+            html[data-skin="shrek"] .brand-title::before { display: none; }
+            html[data-skin="shrek"] .brand-title::after { display: none; }
             .title-actions { flex-wrap: wrap; justify-content: flex-end; }
             .skin-picker { min-width: 112px; }
-            .skin-button { min-height: 32px; padding: 5px 9px; }
+            .skin-button { width: 32px; min-width: 32px; min-height: 32px; padding: 0; }
             .add-title-button { min-height: 32px; padding: 5px 9px; }
             .controls {
                 display: flex;
@@ -574,7 +694,9 @@
                 <div class="brand-title"><img id="headerImage" class="header-image" alt=""><h1>Sanford Library</h1></div>
                 <div class="title-actions">
                     <select id="skinSelect" class="skin-picker" aria-label="Interface skin"></select>
-                    <button id="manageSkinsButton" class="skin-button" type="button" disabled title="Start server.py to add custom skins">Skins</button>
+                    <button id="manageSkinsButton" class="skin-button" type="button" disabled title="Start server.py to add custom skins" aria-label="Manage skins">
+                        <span aria-hidden="true">&#9881;</span>
+                    </button>
                     <button id="addTitleButton" class="add-title-button" type="button" disabled title="Start server.py to enable catalog editing">+ Add title</button>
                 </div>
             </div>
@@ -683,7 +805,10 @@
     <dialog id="skinDialog" aria-labelledby="skinHeading">
         <form id="skinForm" class="dialog-form">
             <div class="dialog-header">
-                <h2 id="skinHeading">Create a custom skin</h2>
+                <div>
+                    <h2 id="skinHeading">Create a custom skin</h2>
+                    <p class="dialog-drag-hint">Drag to move. Resize from the lower-right corner. Changes preview live.</p>
+                </div>
                 <button id="closeSkinDialog" class="dialog-close" type="button" aria-label="Close">&times;</button>
             </div>
             <label class="form-field full">
@@ -692,9 +817,6 @@
             </label>
             <div id="skinColors" class="skin-colors"></div>
             <div id="skinOptions"></div>
-            <div id="skinPreview" class="skin-preview">
-                <div class="skin-preview-card"><strong>Skin preview</strong><br><span>Secondary text and metadata</span><br><b>Accent color</b></div>
-            </div>
             <div id="skinStatus" class="form-status" role="status" aria-live="polite"></div>
             <div class="dialog-actions">
                 <button id="deleteSkinButton" class="danger-button hidden" type="button">Delete selected</button>
@@ -702,6 +824,7 @@
                 <button class="primary-button" type="submit">Save skin</button>
             </div>
         </form>
+        <button id="skinResizeHandle" class="skin-resize-handle" type="button" aria-label="Resize skin editor" title="Drag to resize"></button>
     </dialog>
     <footer class="tmdb-attribution">
         <a href="https://www.themoviedb.org" target="_blank" rel="noreferrer"><img src="assets/tmdb-logo.svg" alt="TMDB"></a>
@@ -752,9 +875,9 @@
                 {name: 'shadowStyle', label: 'Shadows', type: 'select', options: [['none', 'None'], ['soft', 'Soft'], ['deep', 'Deep']]}
             ]],
             ['Images', [
-                {name: 'headerImage', label: 'Header image URL or path', type: 'text', placeholder: 'assets/logo.png'},
-                {name: 'familyIcon', label: 'Family icon URL or path', type: 'text', placeholder: 'assets/stevie-approved.png'},
-                {name: 'backgroundImage', label: 'Background image URL or path', type: 'text', placeholder: 'assets/background.jpg'},
+                {name: 'headerImage', label: 'Header image', type: 'image', placeholder: 'Or enter an image URL or app path'},
+                {name: 'familyIcon', label: 'Family icon', type: 'image', placeholder: 'Or enter an image URL or app path'},
+                {name: 'backgroundImage', label: 'Background image', type: 'image', placeholder: 'Or enter an image URL or app path'},
                 {name: 'backgroundSize', label: 'Background sizing', type: 'select', options: [['cover', 'Cover'], ['contain', 'Contain'], ['auto', 'Original size']]},
                 {name: 'backgroundPosition', label: 'Background position', type: 'select', options: [['center', 'Center'], ['top', 'Top'], ['bottom', 'Bottom']]},
                 {name: 'backgroundAttachment', label: 'Background scrolling', type: 'select', options: [['fixed', 'Fixed'], ['scroll', 'Scroll with page']]}
@@ -765,6 +888,7 @@
             ]]
         ];
         const builtInSkins = [
+            {...skinDefaults, id: 'shrek', name: "Shrek's Swamp", background: '#10180d', surface: '#20301d', surfaceAlt: '#39482a', text: '#f5efcb', muted: '#c4c79c', border: '#748c40', accent: '#b7ce63', accentText: '#18210f', fontFamily: 'rounded', fontSize: '15', fontWeight: '500', controlHeight: '40', posterSize: '180', gridGap: '18', cornerRadius: '14', shadowStyle: 'deep', dialogBackdrop: '#080c06', backdropOpacity: '82', scrollbarWidth: '12', scrollbarTrack: '#20301d', scrollbarThumb: '#748c40', backgroundImage: 'assets/shrek-swamp.png'},
             {...skinDefaults, id: 'midnight', name: 'Midnight', background: '#111111', surface: '#181818', surfaceAlt: '#222222', text: '#eeeeee', muted: '#aaaaaa', border: '#444444', accent: '#d6a84f', accentText: '#111111'},
             {...skinDefaults, id: 'matinee', name: 'Matinee', background: '#f4efe4', surface: '#fffaf0', surfaceAlt: '#e8dfcf', text: '#27221b', muted: '#6f665a', border: '#b8aa96', accent: '#8a3d2f', accentText: '#ffffff', scrollbarTrack: '#e8dfcf', scrollbarThumb: '#b8aa96'},
             {...skinDefaults, id: 'deep-blue', name: 'Deep Blue', background: '#07141f', surface: '#0d2030', surfaceAlt: '#173247', text: '#e6f3fa', muted: '#9ab5c5', border: '#31566d', accent: '#55c2d9', accentText: '#051218', scrollbarTrack: '#0d2030', scrollbarThumb: '#31566d'}
@@ -801,12 +925,22 @@
         const skinForm = document.getElementById('skinForm');
         const skinColors = document.getElementById('skinColors');
         const skinOptions = document.getElementById('skinOptions');
-        const skinPreview = document.getElementById('skinPreview');
         const skinStatus = document.getElementById('skinStatus');
         const deleteSkinButton = document.getElementById('deleteSkinButton');
         const closeSkinDialog = document.getElementById('closeSkinDialog');
         const cancelSkinDialog = document.getElementById('cancelSkinDialog');
+        const skinResizeHandle = document.getElementById('skinResizeHandle');
         const headerImage = document.getElementById('headerImage');
+        const skinDialogHeader = skinDialog.querySelector('.dialog-header');
+        const saveSkinButton = skinForm.querySelector('button[type="submit"]');
+        const skinImageControls = new Map();
+        const skinImageValues = new Map();
+        let skinEditorOriginal = null;
+        let keepSkinChangesOnClose = false;
+        let skinDialogGeometry = null;
+        let skinDialogDrag = null;
+        let skinDialogResize = null;
+        let pendingSkinImages = 0;
 
         function normalizeSkin(skin) {
             return {...skinDefaults, ...skin};
@@ -869,6 +1003,20 @@
             return `rgba(${value >> 16}, ${(value >> 8) & 255}, ${value & 255}, ${opacity})`;
         }
 
+        function collectSkinFormValues() {
+            const skin = {
+                id: skinEditorOriginal?.id || selectedSkin().id,
+                name: skinForm.elements.name.value
+            };
+            skinFields.forEach(([field]) => { skin[field] = skinForm.elements[field].value; });
+            skinOptionGroups.flatMap(([, fields]) => fields).forEach(({name}) => {
+                skin[name] = skinImageValues.has(name)
+                    ? skinImageValues.get(name)
+                    : skinForm.elements[name].value;
+            });
+            return skin;
+        }
+
         function renderSkinOptions(preferredId) {
             const fragment = document.createDocumentFragment();
             const groups = [['Built-in', builtInSkins], ['Custom', customSkins]];
@@ -907,7 +1055,7 @@
                 value.textContent = color.value;
                 color.addEventListener('input', () => {
                     value.textContent = color.value;
-                    updateSkinPreview();
+                    updateLiveSkin();
                 });
                 row.append(color, value);
                 label.appendChild(row);
@@ -921,8 +1069,78 @@
                 const options = document.createElement('div');
                 options.className = 'skin-options';
                 fields.forEach(config => {
-                    const label = document.createElement('label');
+                    const label = document.createElement(config.type === 'image' ? 'div' : 'label');
                     label.className = 'form-field';
+                    if (config.type === 'image') {
+                        const labelText = document.createElement('span');
+                        labelText.textContent = config.label;
+                        const control = document.createElement('span');
+                        control.className = 'skin-image-control';
+                        skinImageValues.set(config.name, skinDefaults[config.name]);
+                        const file = document.createElement('input');
+                        file.type = 'file';
+                        file.accept = 'image/jpeg,image/png,image/webp';
+                        file.setAttribute('aria-label', `Choose ${config.label.toLowerCase()} file`);
+                        const pathRow = document.createElement('span');
+                        pathRow.className = 'skin-image-path-row';
+                        const path = document.createElement('input');
+                        path.type = 'text';
+                        path.maxLength = 500;
+                        path.placeholder = config.placeholder;
+                        path.setAttribute('aria-label', `${config.label} URL or app path`);
+                        const clear = document.createElement('button');
+                        clear.className = 'skin-image-clear';
+                        clear.type = 'button';
+                        clear.textContent = 'Clear';
+                        const status = document.createElement('span');
+                        status.className = 'skin-image-status';
+                        status.textContent = 'No image selected.';
+                        path.addEventListener('input', () => {
+                            file.value = '';
+                            const value = path.value.trim();
+                            skinImageValues.set(config.name, value);
+                            status.textContent = value ? `Using ${value}` : 'No image selected.';
+                            clear.classList.toggle('hidden', !value);
+                            updateLiveSkin();
+                        });
+                        file.addEventListener('change', async () => {
+                            const selectedFile = file.files?.[0];
+                            if (!selectedFile) return;
+                            pendingSkinImages += 1;
+                            saveSkinButton.disabled = true;
+                            skinStatus.textContent = `Preparing ${config.label.toLowerCase()}...`;
+                            try {
+                                const imageData = await prepareSkinImage(selectedFile, config.name);
+                                if (file.files?.[0] !== selectedFile) return;
+                                skinImageValues.set(config.name, imageData);
+                                path.value = '';
+                                status.textContent = `Selected file: ${selectedFile.name}`;
+                                clear.classList.remove('hidden');
+                                updateLiveSkin();
+                                skinStatus.textContent = '';
+                            } catch (error) {
+                                file.value = '';
+                                skinStatus.textContent = error.message || 'The selected image could not be prepared.';
+                            } finally {
+                                pendingSkinImages -= 1;
+                                saveSkinButton.disabled = pendingSkinImages > 0;
+                            }
+                        });
+                        clear.addEventListener('click', () => {
+                            file.value = '';
+                            path.value = '';
+                            skinImageValues.set(config.name, '');
+                            status.textContent = 'No image selected.';
+                            clear.classList.add('hidden');
+                            updateLiveSkin();
+                        });
+                        pathRow.append(path, clear);
+                        control.append(file, pathRow, status);
+                        label.append(labelText, control);
+                        skinImageControls.set(config.name, {file, path, clear, status});
+                        options.appendChild(label);
+                        return;
+                    }
                     label.textContent = config.label;
                     let input;
                     if (config.type === 'select') {
@@ -947,12 +1165,12 @@
                         row.className = 'range-field';
                         const output = document.createElement('output');
                         const refreshOutput = () => { output.value = input.value + (config.suffix || ''); };
-                        input.addEventListener('input', () => { refreshOutput(); updateSkinPreview(); });
+                        input.addEventListener('input', () => { refreshOutput(); updateLiveSkin(); });
                         refreshOutput();
                         row.append(input, output);
                         label.appendChild(row);
                     } else {
-                        input.addEventListener('input', updateSkinPreview);
+                        input.addEventListener('input', updateLiveSkin);
                         label.appendChild(input);
                     }
                     options.appendChild(label);
@@ -962,39 +1180,72 @@
             });
         }
 
-        function updateSkinPreview() {
-            skinFields.forEach(([field]) => {
-                const cssName = '--skin-' + field.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
-                skinPreview.style.setProperty(cssName, skinForm.elements[field].value);
-            });
-            const family = skinForm.elements.fontFamily.value;
-            const families = {system: 'Arial, Helvetica, sans-serif', serif: 'Georgia, serif', monospace: 'Consolas, monospace', rounded: 'Trebuchet MS, sans-serif'};
-            skinPreview.style.fontFamily = families[family];
-            skinPreview.style.fontSize = skinForm.elements.fontSize.value + 'px';
-            skinPreview.style.fontWeight = skinForm.elements.fontWeight.value;
-            skinPreview.style.padding = skinForm.elements.spacing.value + 'px';
-            skinPreview.style.borderRadius = skinForm.elements.cornerRadius.value + 'px';
-            const shadow = {none: 'none', soft: '0 1px 5px rgba(0,0,0,.35)', deep: '0 18px 60px rgba(0,0,0,.75)'};
-            skinPreview.style.boxShadow = shadow[skinForm.elements.shadowStyle.value];
-            const image = skinForm.elements.backgroundImage.value;
-            skinPreview.style.backgroundImage = image ? `url(${JSON.stringify(image)})` : 'none';
-            skinPreview.style.backgroundSize = skinForm.elements.backgroundSize.value;
-            skinPreview.style.backgroundPosition = skinForm.elements.backgroundPosition.value;
+        function updateLiveSkin() {
+            applySkin(collectSkinFormValues(), false);
         }
 
         function populateSkinForm(skin = selectedSkin()) {
             skin = normalizeSkin(skin);
             skinForm.reset();
             skinForm.elements.name.value = skin.name + (customSkins.includes(skin) ? '' : ' Custom');
-            skinFields.forEach(([field]) => { skinForm.elements[field].value = skin[field]; });
+            skinFields.forEach(([field]) => {
+                const input = skinForm.elements[field];
+                input.value = skin[field];
+                const value = input.parentElement.querySelector('span');
+                if (value) value.textContent = input.value;
+            });
             skinOptionGroups.flatMap(([, fields]) => fields).forEach(({name, suffix}) => {
+                const imageControl = skinImageControls.get(name);
+                if (imageControl) {
+                    skinImageValues.set(name, skin[name]);
+                    imageControl.file.value = '';
+                    imageControl.path.value = skin[name];
+                    imageControl.status.textContent = skin[name] ? `Using ${skin[name]}` : 'No image selected.';
+                    imageControl.clear.classList.toggle('hidden', !skin[name]);
+                    return;
+                }
                 skinForm.elements[name].value = skin[name];
                 const output = skinForm.elements[name].parentElement.querySelector('output');
                 if (output) output.value = skin[name] + (suffix || '');
             });
             deleteSkinButton.classList.toggle('hidden', !customSkins.includes(skin));
             skinStatus.textContent = '';
-            updateSkinPreview();
+            updateLiveSkin();
+        }
+
+        function clampSkinDialogToViewport() {
+            if (!skinDialog.open) return;
+            const inset = 12;
+            const rect = skinDialog.getBoundingClientRect();
+            const width = Math.min(rect.width, Math.max(0, window.innerWidth - inset * 2));
+            const height = Math.min(rect.height, Math.max(0, window.innerHeight - inset * 2));
+            const left = Math.min(Math.max(inset, rect.left), Math.max(inset, window.innerWidth - width - inset));
+            const top = Math.min(Math.max(inset, rect.top), Math.max(inset, window.innerHeight - height - inset));
+            skinDialog.style.width = width + 'px';
+            skinDialog.style.height = height + 'px';
+            skinDialog.style.left = left + 'px';
+            skinDialog.style.top = top + 'px';
+            skinDialogGeometry = {left, top, width, height};
+            const updatedRect = skinDialog.getBoundingClientRect();
+            skinResizeHandle.style.left = (updatedRect.right - 24) + 'px';
+            skinResizeHandle.style.top = (updatedRect.bottom - 24) + 'px';
+        }
+
+        function positionSkinDialog() {
+            const inset = 12;
+            const rect = skinDialog.getBoundingClientRect();
+            const geometry = skinDialogGeometry || {
+                left: Math.max(inset, (window.innerWidth - rect.width) / 2),
+                top: Math.max(inset, (window.innerHeight - rect.height) / 2),
+                width: rect.width,
+                height: rect.height
+            };
+            skinDialog.style.margin = '0';
+            skinDialog.style.left = geometry.left + 'px';
+            skinDialog.style.top = geometry.top + 'px';
+            skinDialog.style.width = geometry.width + 'px';
+            skinDialog.style.height = geometry.height + 'px';
+            clampSkinDialogToViewport();
         }
 
         async function loadSkins() {
@@ -1166,10 +1417,43 @@
                 };
                 image.onerror = () => {
                     URL.revokeObjectURL(objectUrl);
-                    reject(new Error('The selected poster could not be read.'));
+                    reject(new Error('The selected image could not be read.'));
                 };
                 image.src = objectUrl;
             });
+        }
+
+        async function prepareSkinImage(file, field) {
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                throw new Error('Choose a JPEG, PNG, or WebP image.');
+            }
+            if (file.size > 20 * 1024 * 1024) {
+                throw new Error('Choose an image smaller than 20 MB.');
+            }
+            const image = await loadImage(file);
+            const limits = {
+                headerImage: [1600, 600],
+                familyIcon: [512, 512],
+                backgroundImage: [2560, 1440]
+            };
+            const [maximumWidth, maximumHeight] = limits[field];
+            const scale = Math.min(1, maximumWidth / image.naturalWidth, maximumHeight / image.naturalHeight);
+            const width = Math.max(1, Math.round(image.naturalWidth * scale));
+            const height = Math.max(1, Math.round(image.naturalHeight * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext('2d');
+            if (!context) throw new Error('The selected image could not be prepared.');
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = 'high';
+            context.drawImage(image, 0, 0, width, height);
+            let imageData = canvas.toDataURL('image/webp', 0.86);
+            if (!imageData.startsWith('data:image/webp')) imageData = canvas.toDataURL('image/png');
+            if (imageData.length * 0.75 > 4 * 1024 * 1024) {
+                throw new Error('The selected image is too large after optimization.');
+            }
+            return imageData;
         }
 
         async function optimizePoster(file) {
@@ -1376,25 +1660,106 @@
         search.addEventListener('input', applyFilters);
         skinSelect.addEventListener('change', () => applySkin(selectedSkin()));
         manageSkinsButton.addEventListener('click', () => {
+            skinEditorOriginal = normalizeSkin(selectedSkin());
+            keepSkinChangesOnClose = false;
             populateSkinForm();
             skinDialog.showModal();
-            queueMicrotask(() => skinForm.elements.name.focus());
+            queueMicrotask(() => {
+                skinDialog.scrollTop = 0;
+                positionSkinDialog();
+                skinForm.elements.name.focus();
+            });
         });
         [closeSkinDialog, cancelSkinDialog].forEach(button => {
             button.addEventListener('click', () => skinDialog.close());
         });
-        skinDialog.addEventListener('click', event => {
-            if (event.target === skinDialog) skinDialog.close();
+        skinDialog.addEventListener('close', () => {
+            if (!keepSkinChangesOnClose && skinEditorOriginal) applySkin(skinEditorOriginal, false);
+            skinEditorOriginal = null;
+            keepSkinChangesOnClose = false;
         });
+        skinDialogHeader.addEventListener('pointerdown', event => {
+            if (event.button !== 0 || event.target.closest('button, input, select, a')) return;
+            const rect = skinDialog.getBoundingClientRect();
+            skinDialogDrag = {
+                pointerId: event.pointerId,
+                offsetX: event.clientX - rect.left,
+                offsetY: event.clientY - rect.top
+            };
+            skinDialogHeader.setPointerCapture(event.pointerId);
+            event.preventDefault();
+        });
+        skinDialogHeader.addEventListener('pointermove', event => {
+            if (!skinDialogDrag || event.pointerId !== skinDialogDrag.pointerId) return;
+            const inset = 12;
+            const rect = skinDialog.getBoundingClientRect();
+            const maxLeft = Math.max(inset, window.innerWidth - rect.width - inset);
+            const maxTop = Math.max(inset, window.innerHeight - rect.height - inset);
+            const left = Math.min(Math.max(inset, event.clientX - skinDialogDrag.offsetX), maxLeft);
+            const top = Math.min(Math.max(inset, event.clientY - skinDialogDrag.offsetY), maxTop);
+            skinDialog.style.left = left + 'px';
+            skinDialog.style.top = top + 'px';
+            skinDialogGeometry = {left, top, width: rect.width, height: rect.height};
+            skinResizeHandle.style.left = (left + rect.width - 24) + 'px';
+            skinResizeHandle.style.top = (top + rect.height - 24) + 'px';
+        });
+        const finishSkinDialogDrag = event => {
+            if (!skinDialogDrag || event.pointerId !== skinDialogDrag.pointerId) return;
+            skinDialogDrag = null;
+        };
+        skinDialogHeader.addEventListener('pointerup', finishSkinDialogDrag);
+        skinDialogHeader.addEventListener('pointercancel', finishSkinDialogDrag);
+        skinResizeHandle.addEventListener('pointerdown', event => {
+            if (event.button !== 0) return;
+            const rect = skinDialog.getBoundingClientRect();
+            skinDialogResize = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                width: rect.width,
+                height: rect.height,
+                left: rect.left,
+                top: rect.top
+            };
+            skinResizeHandle.setPointerCapture(event.pointerId);
+            event.preventDefault();
+            event.stopPropagation();
+        });
+        skinResizeHandle.addEventListener('pointermove', event => {
+            if (!skinDialogResize || event.pointerId !== skinDialogResize.pointerId) return;
+            const inset = 12;
+            const minimumWidth = Math.min(360, window.innerWidth - inset * 2);
+            const minimumHeight = Math.min(320, window.innerHeight - inset * 2);
+            const maximumWidth = window.innerWidth - skinDialogResize.left - inset;
+            const maximumHeight = window.innerHeight - skinDialogResize.top - inset;
+            const width = Math.min(maximumWidth, Math.max(minimumWidth,
+                skinDialogResize.width + event.clientX - skinDialogResize.startX));
+            const height = Math.min(maximumHeight, Math.max(minimumHeight,
+                skinDialogResize.height + event.clientY - skinDialogResize.startY));
+            skinDialog.style.width = width + 'px';
+            skinDialog.style.height = height + 'px';
+            skinDialogGeometry = {left: skinDialogResize.left, top: skinDialogResize.top, width, height};
+            skinResizeHandle.style.left = (skinDialogResize.left + width - 24) + 'px';
+            skinResizeHandle.style.top = (skinDialogResize.top + height - 24) + 'px';
+        });
+        const finishSkinDialogResize = event => {
+            if (!skinDialogResize || event.pointerId !== skinDialogResize.pointerId) return;
+            skinDialogResize = null;
+            clampSkinDialogToViewport();
+        };
+        skinResizeHandle.addEventListener('pointerup', finishSkinDialogResize);
+        skinResizeHandle.addEventListener('pointercancel', finishSkinDialogResize);
+        new ResizeObserver(clampSkinDialogToViewport).observe(skinDialog);
+        window.addEventListener('resize', clampSkinDialogToViewport);
         skinForm.addEventListener('submit', async event => {
             event.preventDefault();
+            if (pendingSkinImages > 0) {
+                skinStatus.textContent = 'Wait for the selected images to finish processing.';
+                return;
+            }
             if (!skinForm.reportValidity()) return;
-            const data = new FormData(skinForm);
-            const skin = {name: data.get('name')};
-            skinFields.forEach(([field]) => { skin[field] = data.get(field); });
-            skinOptionGroups.flatMap(([, fields]) => fields).forEach(({name}) => {
-                skin[name] = data.get(name);
-            });
+            const skin = collectSkinFormValues();
+            delete skin.id;
             skinStatus.textContent = 'Saving skin...';
             try {
                 const response = await fetch('/api/skins', {
@@ -1405,6 +1770,7 @@
                 customSkins.push(payload.skin);
                 renderSkinOptions(payload.skin.id);
                 applySkin(payload.skin);
+                keepSkinChangesOnClose = true;
                 skinDialog.close();
                 showNotice(`${payload.skin.name} is now the active skin.`);
             } catch (error) {
@@ -1422,6 +1788,7 @@
                 customSkins = customSkins.filter(item => item.id !== skin.id);
                 renderSkinOptions(builtInSkins[0].id);
                 applySkin(builtInSkins[0]);
+                keepSkinChangesOnClose = true;
                 skinDialog.close();
                 showNotice(`${skin.name} was deleted.`);
             } catch (error) {
