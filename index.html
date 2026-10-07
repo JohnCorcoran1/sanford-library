@@ -15,13 +15,28 @@
             --skin-border: #444444;
             --skin-accent: #d6a84f;
             --skin-accent-text: #111111;
+            --skin-font-family: Arial, Helvetica, sans-serif;
+            --skin-font-size: 14px;
+            --skin-font-weight: 400;
+            --skin-spacing: 16px;
+            --skin-content-width: 1800px;
+            --skin-control-height: 38px;
+            --skin-grid-gap: 16px;
+            --skin-radius: 6px;
+            --skin-shadow: 0 1px 5px rgba(0,0,0,.65);
+            --skin-backdrop: rgba(0,0,0,.75);
+            --skin-scrollbar-width: 10px;
+            --skin-scrollbar-track: #181818;
+            --skin-scrollbar-thumb: #444444;
         }
         html, body {
             margin: 0;
             padding: 0;
             background: #111;
             color: #eee;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: var(--skin-font-family);
+            font-size: var(--skin-font-size);
+            font-weight: var(--skin-font-weight);
         }
         body { min-height: 100vh; }
         .header {
@@ -30,11 +45,11 @@
             z-index: 100;
             background: rgba(17,17,17,.96);
             border-bottom: 1px solid #333;
-            padding: 16px;
+            padding: var(--skin-spacing);
             backdrop-filter: blur(8px);
         }
         .header-inner {
-            max-width: 1800px;
+            max-width: var(--skin-content-width);
             margin: 0 auto;
         }
         h1 {
@@ -45,7 +60,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
+            gap: var(--skin-spacing);
             margin-bottom: 14px;
         }
         .controls {
@@ -55,18 +70,18 @@
         }
         input, select {
             width: 100%;
-            min-height: 38px;
+            min-height: var(--skin-control-height);
             padding: 8px 10px;
-            border-radius: 6px;
+            border-radius: var(--skin-radius);
             border: 1px solid #444;
             background: #222;
             color: #eee;
             font-size: 14px;
         }
         button {
-            min-height: 38px;
+            min-height: var(--skin-control-height);
             padding: 8px 12px;
-            border-radius: 6px;
+            border-radius: var(--skin-radius);
             border: 1px solid #555;
             background: #292929;
             color: #eee;
@@ -94,7 +109,7 @@
             width: 42px;
             height: 38px;
             padding: 4px;
-            border-radius: 6px;
+            border-radius: var(--skin-radius);
             border: 1px solid #444;
             background: #222;
             color: #eee;
@@ -138,12 +153,12 @@
         }
         .notice.error { color: #ef8f8f; }
         .grid {
-            max-width: 1800px;
+            max-width: var(--skin-content-width);
             margin: 0 auto;
-            padding: 20px 16px 40px;
+            padding: calc(var(--skin-spacing) * 1.25) var(--skin-spacing) calc(var(--skin-spacing) * 2.5);
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(var(--poster-size), 1fr));
-            gap: 24px 16px;
+            gap: calc(var(--skin-grid-gap) * 1.5) var(--skin-grid-gap);
         }
         .movie-card {
             min-width: 0;
@@ -155,9 +170,9 @@
             aspect-ratio: 2 / 3;
             object-fit: cover;
             background: #222;
-            border-radius: 5px;
+            border-radius: var(--skin-radius);
             border: 1px solid transparent;
-            box-shadow: 0 1px 5px rgba(0,0,0,.65);
+            box-shadow: var(--skin-shadow);
         }
         .poster-missing {
             display: flex;
@@ -185,7 +200,7 @@
             font-size: 11px;
             color: #aaa;
             background: #222;
-            border-radius: 3px;
+            border-radius: calc(var(--skin-radius) * .6);
             padding: 2px 4px;
         }
         .family-detail {
@@ -206,13 +221,13 @@
             padding: 0;
             overflow: auto;
             border: 1px solid #555;
-            border-radius: 10px;
+            border-radius: calc(var(--skin-radius) * 1.67);
             background: #181818;
             color: #eee;
-            box-shadow: 0 18px 60px rgba(0,0,0,.75);
+            box-shadow: var(--skin-shadow);
         }
-        dialog::backdrop { background: rgba(0,0,0,.75); }
-        .dialog-form { padding: 20px; }
+        dialog::backdrop { background: var(--skin-backdrop); }
+        .dialog-form { padding: calc(var(--skin-spacing) * 1.25); }
         .dialog-header {
             display: flex;
             align-items: center;
@@ -377,7 +392,7 @@
             font-weight: 700;
         }
         .tmdb-attribution {
-            max-width: 1800px;
+            max-width: var(--skin-content-width);
             margin: 0 auto;
             padding: 0 16px 24px;
             color: #777;
@@ -399,6 +414,22 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
         }
+        .skin-section {
+            margin: 16px 0 0;
+            padding: 12px;
+            border: 1px solid var(--skin-border);
+            border-radius: var(--skin-radius);
+        }
+        .skin-section legend { padding: 0 6px; font-weight: 700; }
+        .skin-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .range-field { display: grid; grid-template-columns: minmax(0, 1fr) 54px; align-items: center; gap: 8px; }
+        .range-field output { color: var(--skin-muted); text-align: right; }
+        .brand-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .header-image { display: none; max-width: 160px; height: 40px; object-fit: contain; }
+        * { scrollbar-color: var(--skin-scrollbar-thumb) var(--skin-scrollbar-track); scrollbar-width: auto; }
+        *::-webkit-scrollbar { width: var(--skin-scrollbar-width); height: var(--skin-scrollbar-width); }
+        *::-webkit-scrollbar-track { background: var(--skin-scrollbar-track); }
+        *::-webkit-scrollbar-thumb { background: var(--skin-scrollbar-thumb); border-radius: var(--skin-radius); }
         .color-field {
             display: grid;
             grid-template-columns: 42px minmax(0, 1fr);
@@ -540,7 +571,7 @@
     <header class="header">
         <div class="header-inner">
             <div class="title-row">
-                <h1>Sanford Library</h1>
+                <div class="brand-title"><img id="headerImage" class="header-image" alt=""><h1>Sanford Library</h1></div>
                 <div class="title-actions">
                     <select id="skinSelect" class="skin-picker" aria-label="Interface skin"></select>
                     <button id="manageSkinsButton" class="skin-button" type="button" disabled title="Start server.py to add custom skins">Skins</button>
@@ -660,6 +691,7 @@
                 <input name="name" type="text" maxlength="40" required placeholder="Movie night">
             </label>
             <div id="skinColors" class="skin-colors"></div>
+            <div id="skinOptions"></div>
             <div id="skinPreview" class="skin-preview">
                 <div class="skin-preview-card"><strong>Skin preview</strong><br><span>Secondary text and metadata</span><br><b>Accent color</b></div>
             </div>
@@ -689,12 +721,53 @@
             ['background', 'Page background'], ['surface', 'Panels'],
             ['surfaceAlt', 'Controls and tags'], ['text', 'Main text'],
             ['muted', 'Secondary text'], ['border', 'Borders'],
-            ['accent', 'Accent'], ['accentText', 'Text on accent']
+            ['accent', 'Accent'], ['accentText', 'Text on accent'],
+            ['dialogBackdrop', 'Dialog backdrop'], ['scrollbarTrack', 'Scrollbar track'],
+            ['scrollbarThumb', 'Scrollbar thumb']
+        ];
+        const skinDefaults = {
+            fontFamily: 'system', fontSize: '14', fontWeight: '400', spacing: '16',
+            contentWidth: '1800', controlHeight: '38', posterSize: '190', gridGap: '16',
+            cornerRadius: '6', shadowStyle: 'soft', headerImage: '',
+            familyIcon: 'assets/stevie-approved.png', dialogBackdrop: '#000000',
+            backdropOpacity: '75', scrollbarWidth: '10', scrollbarTrack: '#181818',
+            scrollbarThumb: '#444444', backgroundImage: '', backgroundSize: 'cover',
+            backgroundPosition: 'center', backgroundAttachment: 'fixed'
+        };
+        const skinOptionGroups = [
+            ['Typography', [
+                {name: 'fontFamily', label: 'Font family', type: 'select', options: [['system', 'System sans-serif'], ['serif', 'Serif'], ['monospace', 'Monospace'], ['rounded', 'Rounded sans-serif']]},
+                {name: 'fontSize', label: 'Base font size', type: 'range', min: 12, max: 20, suffix: 'px'},
+                {name: 'fontWeight', label: 'Base font weight', type: 'select', options: [['300', 'Light'], ['400', 'Regular'], ['500', 'Medium'], ['600', 'Semibold'], ['700', 'Bold'], ['800', 'Extra bold']]}
+            ]],
+            ['Layout', [
+                {name: 'spacing', label: 'Spacing', type: 'range', min: 8, max: 32, suffix: 'px'},
+                {name: 'contentWidth', label: 'Maximum content width', type: 'range', min: 900, max: 2400, step: 50, suffix: 'px'},
+                {name: 'controlHeight', label: 'Control height', type: 'range', min: 30, max: 56, suffix: 'px'},
+                {name: 'posterSize', label: 'Default poster size', type: 'range', min: 120, max: 320, step: 10, suffix: 'px'},
+                {name: 'gridGap', label: 'Grid gap', type: 'range', min: 4, max: 40, suffix: 'px'}
+            ]],
+            ['Shape and depth', [
+                {name: 'cornerRadius', label: 'Corner radius', type: 'range', min: 0, max: 24, suffix: 'px'},
+                {name: 'shadowStyle', label: 'Shadows', type: 'select', options: [['none', 'None'], ['soft', 'Soft'], ['deep', 'Deep']]}
+            ]],
+            ['Images', [
+                {name: 'headerImage', label: 'Header image URL or path', type: 'text', placeholder: 'assets/logo.png'},
+                {name: 'familyIcon', label: 'Family icon URL or path', type: 'text', placeholder: 'assets/stevie-approved.png'},
+                {name: 'backgroundImage', label: 'Background image URL or path', type: 'text', placeholder: 'assets/background.jpg'},
+                {name: 'backgroundSize', label: 'Background sizing', type: 'select', options: [['cover', 'Cover'], ['contain', 'Contain'], ['auto', 'Original size']]},
+                {name: 'backgroundPosition', label: 'Background position', type: 'select', options: [['center', 'Center'], ['top', 'Top'], ['bottom', 'Bottom']]},
+                {name: 'backgroundAttachment', label: 'Background scrolling', type: 'select', options: [['fixed', 'Fixed'], ['scroll', 'Scroll with page']]}
+            ]],
+            ['Dialog and scrollbars', [
+                {name: 'backdropOpacity', label: 'Backdrop opacity', type: 'range', min: 0, max: 100, suffix: '%'},
+                {name: 'scrollbarWidth', label: 'Scrollbar width', type: 'range', min: 6, max: 20, suffix: 'px'}
+            ]]
         ];
         const builtInSkins = [
-            {id: 'midnight', name: 'Midnight', background: '#111111', surface: '#181818', surfaceAlt: '#222222', text: '#eeeeee', muted: '#aaaaaa', border: '#444444', accent: '#d6a84f', accentText: '#111111'},
-            {id: 'matinee', name: 'Matinee', background: '#f4efe4', surface: '#fffaf0', surfaceAlt: '#e8dfcf', text: '#27221b', muted: '#6f665a', border: '#b8aa96', accent: '#8a3d2f', accentText: '#ffffff'},
-            {id: 'deep-blue', name: 'Deep Blue', background: '#07141f', surface: '#0d2030', surfaceAlt: '#173247', text: '#e6f3fa', muted: '#9ab5c5', border: '#31566d', accent: '#55c2d9', accentText: '#051218'}
+            {...skinDefaults, id: 'midnight', name: 'Midnight', background: '#111111', surface: '#181818', surfaceAlt: '#222222', text: '#eeeeee', muted: '#aaaaaa', border: '#444444', accent: '#d6a84f', accentText: '#111111'},
+            {...skinDefaults, id: 'matinee', name: 'Matinee', background: '#f4efe4', surface: '#fffaf0', surfaceAlt: '#e8dfcf', text: '#27221b', muted: '#6f665a', border: '#b8aa96', accent: '#8a3d2f', accentText: '#ffffff', scrollbarTrack: '#e8dfcf', scrollbarThumb: '#b8aa96'},
+            {...skinDefaults, id: 'deep-blue', name: 'Deep Blue', background: '#07141f', surface: '#0d2030', surfaceAlt: '#173247', text: '#e6f3fa', muted: '#9ab5c5', border: '#31566d', accent: '#55c2d9', accentText: '#051218', scrollbarTrack: '#0d2030', scrollbarThumb: '#31566d'}
         ];
         const search = document.getElementById('search');
         const categoryFilter = document.getElementById('categoryFilter');
@@ -727,11 +800,17 @@
         const skinDialog = document.getElementById('skinDialog');
         const skinForm = document.getElementById('skinForm');
         const skinColors = document.getElementById('skinColors');
+        const skinOptions = document.getElementById('skinOptions');
         const skinPreview = document.getElementById('skinPreview');
         const skinStatus = document.getElementById('skinStatus');
         const deleteSkinButton = document.getElementById('deleteSkinButton');
         const closeSkinDialog = document.getElementById('closeSkinDialog');
         const cancelSkinDialog = document.getElementById('cancelSkinDialog');
+        const headerImage = document.getElementById('headerImage');
+
+        function normalizeSkin(skin) {
+            return {...skinDefaults, ...skin};
+        }
 
         function allSkins() {
             return [...builtInSkins, ...customSkins];
@@ -742,14 +821,52 @@
         }
 
         function applySkin(skin, remember = true) {
+            skin = normalizeSkin(skin);
             skinFields.forEach(([field]) => {
                 const cssName = '--skin-' + field.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
                 document.documentElement.style.setProperty(cssName, skin[field]);
             });
+            const fontFamilies = {
+                system: 'Arial, Helvetica, sans-serif',
+                serif: 'Georgia, Times New Roman, serif',
+                monospace: 'Consolas, Monaco, monospace',
+                rounded: 'Trebuchet MS, Arial Rounded MT Bold, sans-serif'
+            };
+            const shadows = {none: 'none', soft: '0 1px 5px rgba(0,0,0,.35)', deep: '0 18px 60px rgba(0,0,0,.75)'};
+            const root = document.documentElement.style;
+            root.setProperty('--skin-font-family', fontFamilies[skin.fontFamily]);
+            root.setProperty('--skin-font-size', skin.fontSize + 'px');
+            root.setProperty('--skin-font-weight', skin.fontWeight);
+            root.setProperty('--skin-spacing', skin.spacing + 'px');
+            root.setProperty('--skin-content-width', skin.contentWidth + 'px');
+            root.setProperty('--skin-control-height', skin.controlHeight + 'px');
+            root.setProperty('--skin-grid-gap', skin.gridGap + 'px');
+            root.setProperty('--skin-radius', skin.cornerRadius + 'px');
+            root.setProperty('--skin-shadow', shadows[skin.shadowStyle]);
+            root.setProperty('--skin-backdrop', hexToRgba(skin.dialogBackdrop, Number(skin.backdropOpacity) / 100));
+            root.setProperty('--skin-scrollbar-width', skin.scrollbarWidth + 'px');
+            document.body.style.backgroundImage = skin.backgroundImage ? `url(${JSON.stringify(skin.backgroundImage)})` : 'none';
+            document.body.style.backgroundSize = skin.backgroundSize;
+            document.body.style.backgroundPosition = skin.backgroundPosition;
+            document.body.style.backgroundAttachment = skin.backgroundAttachment;
+            document.body.style.backgroundRepeat = skin.backgroundSize === 'cover' ? 'no-repeat' : 'repeat';
+            headerImage.src = skin.headerImage || '';
+            headerImage.style.display = skin.headerImage ? 'block' : 'none';
+            document.querySelectorAll('.family-filter img, .family-toggle img, .family-detail img').forEach(image => {
+                image.src = skin.familyIcon || 'assets/stevie-approved.png';
+            });
+            sizeSlider.value = skin.posterSize;
+            grid.style.setProperty('--poster-size', skin.posterSize + 'px');
+            sizeValue.textContent = skin.posterSize + 'px';
             document.documentElement.dataset.skin = skin.id;
             if (remember) {
                 try { localStorage.setItem(skinStorageKey, skin.id); } catch (_) {}
             }
+        }
+
+        function hexToRgba(hex, opacity) {
+            const value = Number.parseInt(hex.slice(1), 16);
+            return `rgba(${value >> 16}, ${(value >> 8) & 255}, ${value & 255}, ${opacity})`;
         }
 
         function renderSkinOptions(preferredId) {
@@ -796,6 +913,53 @@
                 label.appendChild(row);
                 skinColors.appendChild(label);
             });
+            skinOptionGroups.forEach(([legendText, fields]) => {
+                const fieldset = document.createElement('fieldset');
+                fieldset.className = 'skin-section';
+                const legend = document.createElement('legend');
+                legend.textContent = legendText;
+                const options = document.createElement('div');
+                options.className = 'skin-options';
+                fields.forEach(config => {
+                    const label = document.createElement('label');
+                    label.className = 'form-field';
+                    label.textContent = config.label;
+                    let input;
+                    if (config.type === 'select') {
+                        input = document.createElement('select');
+                        config.options.forEach(([value, text]) => input.add(new Option(text, value)));
+                    } else {
+                        input = document.createElement('input');
+                        input.type = config.type;
+                        if (config.type === 'range') {
+                            input.min = config.min;
+                            input.max = config.max;
+                            input.step = config.step || 1;
+                        } else {
+                            input.maxLength = 500;
+                            input.placeholder = config.placeholder || '';
+                        }
+                    }
+                    input.name = config.name;
+                    input.value = skinDefaults[config.name];
+                    if (config.type === 'range') {
+                        const row = document.createElement('span');
+                        row.className = 'range-field';
+                        const output = document.createElement('output');
+                        const refreshOutput = () => { output.value = input.value + (config.suffix || ''); };
+                        input.addEventListener('input', () => { refreshOutput(); updateSkinPreview(); });
+                        refreshOutput();
+                        row.append(input, output);
+                        label.appendChild(row);
+                    } else {
+                        input.addEventListener('input', updateSkinPreview);
+                        label.appendChild(input);
+                    }
+                    options.appendChild(label);
+                });
+                fieldset.append(legend, options);
+                skinOptions.appendChild(fieldset);
+            });
         }
 
         function updateSkinPreview() {
@@ -803,12 +967,31 @@
                 const cssName = '--skin-' + field.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
                 skinPreview.style.setProperty(cssName, skinForm.elements[field].value);
             });
+            const family = skinForm.elements.fontFamily.value;
+            const families = {system: 'Arial, Helvetica, sans-serif', serif: 'Georgia, serif', monospace: 'Consolas, monospace', rounded: 'Trebuchet MS, sans-serif'};
+            skinPreview.style.fontFamily = families[family];
+            skinPreview.style.fontSize = skinForm.elements.fontSize.value + 'px';
+            skinPreview.style.fontWeight = skinForm.elements.fontWeight.value;
+            skinPreview.style.padding = skinForm.elements.spacing.value + 'px';
+            skinPreview.style.borderRadius = skinForm.elements.cornerRadius.value + 'px';
+            const shadow = {none: 'none', soft: '0 1px 5px rgba(0,0,0,.35)', deep: '0 18px 60px rgba(0,0,0,.75)'};
+            skinPreview.style.boxShadow = shadow[skinForm.elements.shadowStyle.value];
+            const image = skinForm.elements.backgroundImage.value;
+            skinPreview.style.backgroundImage = image ? `url(${JSON.stringify(image)})` : 'none';
+            skinPreview.style.backgroundSize = skinForm.elements.backgroundSize.value;
+            skinPreview.style.backgroundPosition = skinForm.elements.backgroundPosition.value;
         }
 
         function populateSkinForm(skin = selectedSkin()) {
+            skin = normalizeSkin(skin);
             skinForm.reset();
             skinForm.elements.name.value = skin.name + (customSkins.includes(skin) ? '' : ' Custom');
             skinFields.forEach(([field]) => { skinForm.elements[field].value = skin[field]; });
+            skinOptionGroups.flatMap(([, fields]) => fields).forEach(({name, suffix}) => {
+                skinForm.elements[name].value = skin[name];
+                const output = skinForm.elements[name].parentElement.querySelector('output');
+                if (output) output.value = skin[name] + (suffix || '');
+            });
             deleteSkinButton.classList.toggle('hidden', !customSkins.includes(skin));
             skinStatus.textContent = '';
             updateSkinPreview();
@@ -822,7 +1005,7 @@
                 const response = await fetch('/api/skins', {cache: 'no-store'});
                 if (!response.ok) return;
                 const payload = await response.json();
-                customSkins = Array.isArray(payload.skins) ? payload.skins : [];
+                customSkins = Array.isArray(payload.skins) ? payload.skins.map(normalizeSkin) : [];
                 renderSkinOptions(preferredId);
             } catch (_) {
                 console.info('Custom skins are unavailable on this server.');
@@ -882,7 +1065,7 @@
                     badge.className = 'detail family-detail';
                     badge.title = 'Stevie Approved';
                     const image = document.createElement('img');
-                    image.src = 'assets/stevie-approved.png';
+                    image.src = normalizeSkin(selectedSkin()).familyIcon || 'assets/stevie-approved.png';
                     image.alt = 'Stevie Approved';
                     image.loading = 'lazy';
                     image.decoding = 'async';
@@ -1209,6 +1392,9 @@
             const data = new FormData(skinForm);
             const skin = {name: data.get('name')};
             skinFields.forEach(([field]) => { skin[field] = data.get(field); });
+            skinOptionGroups.flatMap(([, fields]) => fields).forEach(({name}) => {
+                skin[name] = data.get(name);
+            });
             skinStatus.textContent = 'Saving skin...';
             try {
                 const response = await fetch('/api/skins', {

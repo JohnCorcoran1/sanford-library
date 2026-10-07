@@ -101,7 +101,7 @@ After editing the catalog, refresh the browser. If the JSON is malformed, the pa
 
 Use the skin picker beside **Add title** to switch between the built-in Midnight, Matinee, and Deep Blue skins. The selected skin is remembered in that browser.
 
-When the included server is running, select **Skins** to create a custom palette. Custom skins are saved in `skins.json`, so they are available to every browser using this library. The editor accepts named colors for the page, panels, controls, text, borders, and accent. Select a custom skin before opening the editor if you want to use it as a starting point or delete it. Arbitrary CSS is not accepted.
+When the included server is running, select **Skins** to create a custom appearance. Custom skins are saved in `skins.json`, so they are available to every browser using this library. The editor controls colors, typography, spacing, content width, control and poster sizing, grid gaps, corner radii, shadows, header and family-badge images, the page background image, dialog backdrop, and scrollbars. Image fields accept a web URL or a path relative to the application, such as `assets/background.jpg`. Select a custom skin before opening the editor if you want to use it as a starting point or delete it. Arbitrary CSS is not accepted.
 
 ## Features
 
@@ -111,7 +111,7 @@ When the included server is running, select **Skins** to create a custom palette
 - Adjustable poster size
 - Lazy-loaded, independently cached poster images
 - Responsive desktop and mobile layout
-- Three built-in interface skins and server-persisted custom color skins
+- Three built-in interface skins and server-persisted custom visual skins
 - TMDB movie and series search with metadata and poster import
 - Local form for manual entry and poster optimization
 

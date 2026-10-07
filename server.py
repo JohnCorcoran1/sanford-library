@@ -38,7 +38,30 @@ SKIN_COLOR_FIELDS = (
     "border",
     "accent",
     "accentText",
+    "dialogBackdrop",
+    "scrollbarTrack",
+    "scrollbarThumb",
 )
+SKIN_OPTION_FIELDS = {
+    "fontFamily": {"system", "serif", "monospace", "rounded"},
+    "shadowStyle": {"none", "soft", "deep"},
+    "backgroundSize": {"cover", "contain", "auto"},
+    "backgroundPosition": {"center", "top", "bottom"},
+    "backgroundAttachment": {"scroll", "fixed"},
+}
+SKIN_NUMBER_FIELDS = {
+    "fontSize": (12, 20),
+    "fontWeight": (300, 800),
+    "spacing": (8, 32),
+    "contentWidth": (900, 2400),
+    "controlHeight": (30, 56),
+    "posterSize": (120, 320),
+    "gridGap": (4, 40),
+    "cornerRadius": (0, 24),
+    "backdropOpacity": (0, 100),
+    "scrollbarWidth": (6, 20),
+}
+SKIN_URL_FIELDS = ("headerImage", "familyIcon", "backgroundImage")
 
 
 def load_dotenv(path: Path) -> None:
@@ -363,6 +386,26 @@ def add_skin(payload: Any) -> dict[str, str]:
         if not isinstance(value, str) or not re.fullmatch(r"#[0-9A-Fa-f]{6}", value):
             raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} must be a six-digit hex color.")
         skin[field] = value.lower()
+    for field, choices in SKIN_OPTION_FIELDS.items():
+        value = payload.get(field)
+        if value not in choices:
+            raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} has an unsupported value.")
+        skin[field] = value
+    for field, (minimum, maximum) in SKIN_NUMBER_FIELDS.items():
+        value = payload.get(field)
+        if not isinstance(value, str) or not value.isdigit() or not minimum <= int(value) <= maximum:
+            raise RequestError(
+                HTTPStatus.BAD_REQUEST,
+                f"{field} must be a whole number from {minimum} to {maximum}.",
+            )
+        skin[field] = value
+    for field in SKIN_URL_FIELDS:
+        value = payload.get(field, "")
+        if not isinstance(value, str) or len(value) > 500 or any(character in value for character in "\r\n<>"):
+            raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} must be a valid image URL or path.")
+        if value and not re.fullmatch(r"(?:https?://|/|\.\.?/)?[A-Za-z0-9_%+.,@:/?#=&~-]+", value):
+            raise RequestError(HTTPStatus.BAD_REQUEST, f"{field} must be a valid image URL or path.")
+        skin[field] = value
 
     with SKINS_LOCK:
         skins = load_skins()
